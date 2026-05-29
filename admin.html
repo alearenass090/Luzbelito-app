@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LUZBELITO Admin">
+<link rel="manifest" href="#" id="manifest-link">
+<title>LUZBELITO Admin</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --cream: #f5f0e8;
+  --cream-dark: #ede7d9;
+  --cream-mid: #e8e0ce;
+  --burgundy: #7a1a2e;
+  --burgundy-dark: #5c1022;
+  --burgundy-light: #9e2240;
+  --text-dark: #1a0a0a;
+  --text-mid: #4a3535;
+  --text-muted: #8a7070;
+  --white: #fdfaf5;
+  --red-alert: #c0392b;
+  --green-ok: #2e7d52;
+  --shadow: 0 2px 20px rgba(26,10,10,0.08);
+  --shadow-deep: 0 8px 40px rgba(26,10,10,0.15);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  background: var(--cream);
+  font-family: 'DM Mono', monospace;
+  color: var(--text-dark);
+  overscroll-behavior: none;
+}
+
+/* ── LOGIN ── */
+#login-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 28px;
+  background: var(--text-dark);
+  position: relative;
+  overflow: hidden;
+}
+#login-screen::before {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(122,26,46,0.4) 0%, transparent 70%);
+  top: -150px; right: -150px;
+  pointer-events: none;
+}
+#login-screen::after {
+  content: '';
+  position: absolute;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(122,26,46,0.2) 0%, transparent 70%);
+  bottom: -100px; left: -50px;
+  pointer-events: none;
+}
+.login-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 48px;
+  font-weight: 300;
+  color: var(--cream);
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.login-sub {
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--burgundy-light);
+  text-transform: uppercase;
+  margin-bottom: 52px;
+}
+.login-card {
+  background: var(--cream);
+  border-radius: 20px;
+  padding: 36px 28px;
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+  z-index: 1;
+}
+.login-card h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 22px;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+.login-card p {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  letter-spacing: 0.5px;
+}
+.field {
+  margin-bottom: 16px;
+}
+.field label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+}
+.field input {
+  width: 100%;
+  padding: 13px 16px;
+  background: var(--cream-dark);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: var(--text-dark);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field input:focus { border-color: var(--burgundy); }
+.btn-primary {
+  width: 100%;
+  padding: 15px;
+  background: var(--burgundy);
+  color: var(--cream);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s, transform 0.1s;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:hover { background: var(--burgundy-dark); }
+.btn-primary.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmer 1.2s infinite;
+}
+@keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+.error-msg {
+  color: var(--red-alert);
+  font-size: 11px;
+  margin-top: 10px;
+  text-align: center;
+  min-height: 16px;
+}
+
+/* ── APP SHELL ── */
+#app { display: none; flex-direction: column; height: 100vh; }
+#app.active { display: flex; }
+
+.top-bar {
+  background: var(--text-dark);
+  color: var(--cream);
+  padding: 14px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.top-bar-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.top-bar-right { display: flex; align-items: center; gap: 16px; }
+.bell-btn {
+  background: none;
+  border: none;
+  color: var(--cream);
+  cursor: pointer;
+  position: relative;
+  padding: 4px;
+  font-size: 20px;
+}
+.notif-badge {
+  position: absolute;
+  top: -2px; right: -2px;
+  width: 8px; height: 8px;
+  background: var(--burgundy-light);
+  border-radius: 50%;
+  border: 1.5px solid var(--text-dark);
+}
+.avatar-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--burgundy);
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  color: var(--cream);
+  font-weight: 600;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 80px;
+}
+
+/* ── NAV BAR ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--white);
+  border-top: 1px solid var(--cream-mid);
+  display: flex;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 4px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  gap: 3px;
+  transition: color 0.2s;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.nav-item.active { color: var(--burgundy); }
+.nav-item svg { width: 22px; height: 22px; }
+
+/* ── SCREENS ── */
+.screen { display: none; padding: 20px; }
+.screen.active { display: block; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── DASHBOARD ── */
+.greeting {
+  margin-bottom: 20px;
+}
+.greeting h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 34px;
+  font-weight: 300;
+  color: var(--text-dark);
+  line-height: 1.1;
+}
+.greeting h1 span { color: var(--burgundy); }
+.greeting p { font-size: 11px; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.5px; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: var(--burgundy);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.stat-card:hover::before { opacity: 1; }
+.stat-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 600;
+  color: var(--burgundy);
+  line-height: 1;
+}
+.stat-value.lg { font-size: 28px; }
+.stat-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.stat-sub.up { color: var(--green-ok); }
+.stat-sub.alert { color: var(--red-alert); }
+
+.section-title {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  margin-top: 4px;
+}
+
+.notif-list { display: flex; flex-direction: column; gap: 10px; }
+.notif-item {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.notif-item:active { transform: scale(0.99); }
+.notif-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.notif-dot.sale { background: var(--burgundy); }
+.notif-dot.stock { background: var(--red-alert); }
+.notif-dot.confirm { background: var(--text-muted); }
+.notif-body { flex: 1; }
+.notif-title { font-size: 13px; font-weight: 500; color: var(--text-dark); margin-bottom: 3px; }
+.notif-meta { font-size: 11px; color: var(--text-muted); }
+
+/* ── STOCK SCREEN ── */
+.search-bar {
+  position: relative;
+  margin-bottom: 14px;
+}
+.search-bar input {
+  width: 100%;
+  padding: 13px 16px 13px 42px;
+  background: var(--white);
+  border: 1.5px solid var(--cream-mid);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--text-dark);
+  outline: none;
+  transition: border-color 0.2s;
+  box-shadow: var(--shadow);
+}
+.search-bar input:focus { border-color: var(--burgundy); }
+.search-bar svg {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.filter-chips {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.filter-chips::-webkit-scrollbar { display: none; }
+.chip {
+  padding: 7px 14px;
+  border-radius: 50px;
+  border: 1.5px solid var(--cream-mid);
+  background: var(--white);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.chip.active {
+  background: var(--burgundy);
+  border-color: var(--burgundy);
+  color: var(--cream);
+}
+
+.stock-list { display: flex; flex-direction: column; gap: 10px; }
+.stock-item {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.stock-item:active { transform: scale(0.99); }
+.stock-thumb {
+  width: 54px; height: 54px;
+  border-radius: 10px;
+  background: var(--cream-dark);
+  object-fit: cover;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  overflow: hidden;
+}
+.stock-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.stock-info { flex: 1; min-width: 0; }
+.stock-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stock-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stock-qty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.qty-badge {
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+}
+.qty-ok { color: var(--green-ok); }
+.qty-low { color: var(--red-alert); }
+.qty-out { color: var(--text-muted); }
+.qty-label { font-size: 9px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+
+.fab {
+  position: fixed;
+  bottom: 88px; right: 20px;
+  width: 52px; height: 52px;
+  background: var(--burgundy);
+  border-radius: 50%;
+  border: none;
+  color: var(--cream);
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(122,26,46,0.4);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  z-index: 90;
+}
+.fab:active { transform: scale(0.94); box-shadow: 0 2px 10px rgba(122,26,46,0.3); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26,10,10,0.6);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-sheet {
+  background: var(--cream);
+  border-radius: 24px 24px 0 0;
+  padding: 24px 20px 40px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+}
+.modal-overlay.open .modal-sheet { transform: translateY(0); }
+.modal-handle {
+  width: 40px; height: 4px;
+  background: var(--cream-mid);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+.modal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--text-dark);
+  margin-bottom: 20px;
+}
+
+.edit-thumb-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.edit-thumb {
+  width: 100px; height: 100px;
+  border-radius: 16px;
+  background: var(--cream-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  cursor: pointer;
+  position: relative;
+}
+.edit-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.edit-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(26,10,10,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.edit-thumb:hover .edit-thumb-overlay { opacity: 1; }
+.edit-thumb-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+#photo-input { display: none; }
+
+.modal-field { margin-bottom: 14px; }
+.modal-field label {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.modal-field input,
+.modal-field textarea,
+.modal-field select {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--white);
+  border: 1.5px solid var(--cream-mid);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--text-dark);
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+}
+.modal-field input:focus,
+.modal-field textarea:focus,
+.modal-field select:focus { border-color: var(--burgundy); }
+.modal-field textarea { resize: vertical; min-height: 80px; }
+
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--white);
+  border: 1.5px solid var(--cream-mid);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+}
+.qty-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--cream-mid);
+  background: none;
+  font-size: 18px;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.qty-btn:active { background: var(--burgundy); color: var(--cream); border-color: var(--burgundy); }
+.qty-num {
+  flex: 1;
+  text-align: center;
+  font-size: 22px;
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--text-dark);
+}
+
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.btn-save {
+  flex: 1;
+  padding: 15px;
+  background: var(--burgundy);
+  color: var(--cream);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-save:hover { background: var(--burgundy-dark); }
+.btn-cancel {
+  padding: 15px 20px;
+  background: none;
+  border: 1.5px solid var(--cream-mid);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.btn-delete {
+  padding: 15px 20px;
+  background: none;
+  border: 1.5px solid rgba(192,57,43,0.3);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--red-alert);
+  cursor: pointer;
+}
+
+/* ── NOTIFICATIONS DRAWER ── */
+.notif-drawer { padding: 0; }
+.notif-header { padding: 0 0 16px; border-bottom: 1px solid var(--cream-mid); margin-bottom: 16px; }
+.notif-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 400;
+}
+.notif-drawer-list { display: flex; flex-direction: column; gap: 10px; }
+.nd-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--cream-dark);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.nd-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.nd-icon.sale { background: rgba(122,26,46,0.1); }
+.nd-icon.stock-alert { background: rgba(192,57,43,0.1); }
+.nd-icon.confirm { background: rgba(46,125,82,0.1); }
+.nd-body {}
+.nd-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.nd-sub { font-size: 11px; color: var(--text-muted); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  top: 20px; left: 50%;
+  transform: translateX(-50%) translateY(-80px);
+  background: var(--text-dark);
+  color: var(--cream);
+  padding: 12px 20px;
+  border-radius: 50px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  z-index: 999;
+  transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-muted);
+}
+.empty-state p { font-size: 12px; letter-spacing: 1px; }
+
+/* ── SETTINGS SCREEN ── */
+.settings-list { display: flex; flex-direction: column; gap: 2px; }
+.settings-item {
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  margin-bottom: 2px;
+  transition: background 0.15s;
+}
+.settings-item:active { background: var(--cream-dark); }
+.settings-item-left { display: flex; align-items: center; gap: 12px; }
+.settings-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--cream-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.settings-label { font-size: 13px; color: var(--text-dark); }
+.settings-chevron { color: var(--text-muted); font-size: 16px; }
+
+.toggle-wrap {
+  width: 44px; height: 26px;
+  background: var(--cream-mid);
+  border-radius: 13px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.toggle-wrap.on { background: var(--burgundy); }
+.toggle-knob {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.toggle-wrap.on .toggle-knob { transform: translateX(18px); }
+
+.section-group { margin-bottom: 24px; }
+.section-group-title {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+/* ── SUPABASE SETUP BANNER ── */
+.setup-banner {
+  background: linear-gradient(135deg, var(--burgundy-dark), var(--burgundy));
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.setup-banner-icon { font-size: 20px; flex-shrink: 0; }
+.setup-banner-body {}
+.setup-banner-title { font-size: 12px; color: var(--cream); font-weight: 500; margin-bottom: 4px; }
+.setup-banner-text { font-size: 11px; color: rgba(245,240,232,0.7); line-height: 1.5; }
+.setup-banner code {
+  background: rgba(0,0,0,0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: var(--cream);
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 0; }
+
+/* PWA install prompt */
+.install-prompt {
+  position: fixed;
+  bottom: 88px; left: 16px; right: 16px;
+  background: var(--text-dark);
+  color: var(--cream);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  z-index: 150;
+  box-shadow: var(--shadow-deep);
+}
+.install-prompt.show { display: flex; }
+.install-prompt-text { flex: 1; font-size: 12px; line-height: 1.4; }
+.install-prompt-btns { display: flex; gap: 8px; }
+.btn-install {
+  padding: 8px 14px;
+  background: var(--burgundy);
+  color: var(--cream);
+  border: none;
+  border-radius: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+}
+.btn-dismiss {
+  padding: 8px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-logo">LUZBELITO</div>
+  <div class="login-sub">Panel Administrativo</div>
+
+  <div class="login-card">
+    <h2>Bienvenida</h2>
+    <p>Ingresá con tu cuenta de administrador</p>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="admin@luzbelito.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" id="login-btn" onclick="handleLogin()">Entrar</button>
+    <div class="error-msg" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     APP SHELL
+════════════════════════════════════════════ -->
+<div id="app">
+  <div class="top-bar">
+    <div class="top-bar-title">LUZBELITO</div>
+    <div class="top-bar-right">
+      <button class="bell-btn" onclick="openNotifDrawer()">
+        🔔<span class="notif-badge" id="notif-badge"></span>
+      </button>
+      <button class="avatar-btn" onclick="goToSettings()">A</button>
+    </div>
+  </div>
+
+  <div class="main-content" id="main-content">
+
+    <!-- DASHBOARD -->
+    <div class="screen active" id="screen-inicio">
+      <div class="greeting">
+        <h1>Hoy <span>✦</span></h1>
+        <p id="today-date">cargando...</p>
+      </div>
+
+      <div class="setup-banner" id="supabase-banner">
+        <div class="setup-banner-icon">⚙️</div>
+        <div class="setup-banner-body">
+          <div class="setup-banner-title">Configurá Supabase</div>
+          <div class="setup-banner-text">Editá las variables <code>SUPABASE_URL</code> y <code>SUPABASE_KEY</code> en el script para conectar datos reales. Por ahora usás datos de demostración.</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Ventas hoy</div>
+          <div class="stat-value" id="stat-ventas">—</div>
+          <div class="stat-sub up" id="stat-ventas-sub">cargando</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Recaudado</div>
+          <div class="stat-value lg" id="stat-recaudado">—</div>
+          <div class="stat-sub">ARS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pendientes</div>
+          <div class="stat-value" id="stat-pendientes">—</div>
+          <div class="stat-sub alert" id="stat-pend-sub">pago pendiente</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Stock bajo</div>
+          <div class="stat-value" id="stat-stock-bajo">—</div>
+          <div class="stat-sub alert">productos</div>
+        </div>
+      </div>
+
+      <div class="section-title">Últimas notificaciones</div>
+      <div class="notif-list" id="notif-list">
+        <div class="empty-state"><p>cargando notificaciones…</p></div>
+      </div>
+    </div>
+
+    <!-- STOCK -->
+    <div class="screen" id="screen-stock">
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="search-input" placeholder="Buscar producto..." oninput="filterProducts()">
+      </div>
+
+      <div class="filter-chips" id="filter-chips">
+        <div class="chip active" data-filter="all" onclick="setFilter('all',this)">Todos</div>
+        <div class="chip" data-filter="low" onclick="setFilter('low',this)">Stock bajo ⚠️</div>
+        <div class="chip" data-filter="out" onclick="setFilter('out',this)">Agotado 🚫</div>
+        <div class="chip" data-filter="ok" onclick="setFilter('ok',this)">Disponible ✓</div>
+      </div>
+
+      <div class="stock-list" id="stock-list">
+        <div class="empty-state"><p>cargando productos…</p></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen" id="screen-ajustes">
+      <div class="greeting">
+        <h1>Ajustes</h1>
+      </div>
+
+      <div class="section-group">
+        <div class="section-group-title">Notificaciones</div>
+        <div class="settings-list">
+          <div class="settings-item">
+            <div class="settings-item-left">
+              <div class="settings-icon">🛒</div>
+              <div class="settings-label">Nueva venta</div>
+            </div>
+            <div class="toggle-wrap on" id="toggle-sale" onclick="toggleSetting('toggle-sale')">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-left">
+              <div class="settings-icon">📦</div>
+              <div class="settings-label">Stock bajo</div>
+            </div>
+            <div class="toggle-wrap on" id="toggle-stock" onclick="toggleSetting('toggle-stock')">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-left">
+              <div class="settings-icon">✅</div>
+              <div class="settings-label">Venta confirmada</div>
+            </div>
+            <div class="toggle-wrap on" id="toggle-confirm" onclick="toggleSetting('toggle-confirm')">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-group">
+        <div class="section-group-title">Umbral de stock bajo</div>
+        <div class="settings-list">
+          <div class="settings-item">
+            <div class="settings-item-left">
+              <div class="settings-icon">🔢</div>
+              <div class="settings-label">Alertar si quedan ≤</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="number" id="stock-threshold" value="3" min="1" max="20"
+                style="width:52px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--cream-mid);font-family:'DM Mono',monospace;font-size:13px;text-align:center;background:var(--white);outline:none;"
+                onchange="saveThreshold(this.value)">
+              <span style="font-size:11px;color:var(--text-muted)">uds.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-group">
+        <div class="section-group-title">Cuenta</div>
+        <div class="settings-list">
+          <div class="settings-item" onclick="enablePush()">
+            <div class="settings-item-left">
+              <div class="settings-icon">🔔</div>
+              <div class="settings-label">Activar push en este cel</div>
+            </div>
+            <span class="settings-chevron">›</span>
+          </div>
+          <div class="settings-item" onclick="handleLogout()">
+            <div class="settings-item-left">
+              <div class="settings-icon">🚪</div>
+              <div class="settings-label" style="color:var(--red-alert)">Cerrar sesión</div>
+            </div>
+            <span class="settings-chevron">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:30px">
+        <p style="font-size:10px;color:var(--text-muted);letter-spacing:1px">LUZBELITO Admin v1.0</p>
+        <p style="font-size:10px;color:var(--text-muted);margin-top:2px">PWA · Supabase · Push</p>
+      </div>
+    </div>
+
+  </div><!-- end main-content -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-inicio" onclick="navigate('inicio')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+      Inicio
+    </button>
+    <button class="nav-item" id="nav-stock" onclick="navigate('stock')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="2" y="7" width="20" height="14" rx="2"/>
+        <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 5v4m-2-2h4"/>
+      </svg>
+      Stock
+    </button>
+    <button class="nav-item" id="nav-ajustes" onclick="navigate('ajustes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+      Ajustes
+    </button>
+  </nav>
+</div>
+
+<!-- FAB for adding product -->
+<button class="fab" id="fab-add" onclick="openAddProduct()" style="display:none">＋</button>
+
+<!-- ═══════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════ -->
+
+<!-- Edit/Add Product Modal -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title-text">Nuevo producto</div>
+
+    <div class="edit-thumb-wrap">
+      <div class="edit-thumb" onclick="document.getElementById('photo-input').click()">
+        <div id="edit-thumb-content">👕</div>
+        <div class="edit-thumb-overlay">
+          <span style="color:white;font-size:12px;letter-spacing:1px">CAMBIAR</span>
+        </div>
+      </div>
+      <div class="edit-thumb-label">Toca para cambiar foto</div>
+      <input type="file" id="photo-input" accept="image/*" onchange="handlePhotoChange(event)">
+    </div>
+
+    <div class="modal-field">
+      <label>Nombre del producto</label>
+      <input type="text" id="edit-name" placeholder="Ej: Remera Redondos">
+    </div>
+    <div class="modal-field">
+      <label>Descripción</label>
+      <textarea id="edit-desc" placeholder="Talle M · Algodón 100%"></textarea>
+    </div>
+    <div class="modal-field">
+      <label>Categoría</label>
+      <select id="edit-category">
+        <option>Remeras</option>
+        <option>Buzos</option>
+        <option>Accesorios</option>
+        <option>Otros</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Precio (ARS)</label>
+      <input type="number" id="edit-price" placeholder="28000">
+    </div>
+    <div class="modal-field">
+      <label>Cantidad en stock</label>
+      <div class="qty-control">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <div class="qty-num" id="qty-display">0</div>
+        <button class="qty-btn" onclick="changeQty(1)">＋</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('product-modal')">Cancelar</button>
+      <button class="btn-delete" id="btn-delete-product" onclick="deleteProduct()" style="display:none">Eliminar</button>
+      <button class="btn-save" onclick="saveProduct()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications Drawer -->
+<div class="modal-overlay" id="notif-modal">
+  <div class="modal-sheet notif-drawer">
+    <div class="modal-handle"></div>
+    <div class="notif-header">
+      <h2>Notificaciones</h2>
+    </div>
+    <div class="notif-drawer-list" id="notif-drawer-list"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- PWA Install Prompt -->
+<div class="install-prompt" id="install-prompt">
+  <div class="install-prompt-text">
+    Instalá LUZBELITO Admin en tu celu para usarla sin internet.
+  </div>
+  <div class="install-prompt-btns">
+    <button class="btn-install" onclick="installPWA()">Instalar</button>
+    <button class="btn-dismiss" onclick="dismissInstall()">✕</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════════════ -->
+<script>
+// ─────────────────────────────────────────────
+//  CONFIGURACIÓN — Reemplazá con tus datos reales
+// ─────────────────────────────────────────────
+const SUPABASE_URL = 'https://tosixibqaacbumifxkou.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvc2l4aWJxYWFjYnVtaWZ4a291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MzM3OTAsImV4cCI6MjA5NTUwOTc5MH0.5NOC59NLPYdGW7c4hjcgC6hswo4llvT7aYrOYEjFNnU';
+const VAPID_PUBLIC_KEY = 'BGgBeOaHYUAOw9s6Qxde0wniKKq1EcjNvrmiwcvH515XNnU_5KLjlvv68KndcSljZtoEtzbgq4owWE3F06JbW6Y';
+
+// ─────────────────────────────────────────────
+//  DATOS DE DEMO (se usan si Supabase no está configurado)
+// ─────────────────────────────────────────────
+let demoProducts = [
+  { id:1, name:'Remera Redondos', desc:'Talle M · Algodón 100%', category:'Remeras', price:28000, qty:4, emoji:'👕', img:null },
+  { id:2, name:'Buzo Soda Stereo L', desc:'Frisa · Talle L', category:'Buzos', price:56000, qty:1, emoji:'🧥', img:null },
+  { id:3, name:'Remera Divididos', desc:'Talle S · Unisex', category:'Remeras', price:24000, qty:0, emoji:'👕', img:null },
+  { id:4, name:'Gorra Spinetta', desc:'Ajustable · Bordada', category:'Accesorios', price:15000, qty:7, emoji:'🧢', img:null },
+  { id:5, name:'Buzo Charly Garcia M', desc:'Frisa · Bolsillo canguro', category:'Buzos', price:62000, qty:2, emoji:'🧥', img:null },
+];
+
+let demoNotifs = [
+  { id:1, type:'sale', title:'Nueva venta — $28.000', sub:'Hace 12 min · Redondos talle M', icon:'🛒' },
+  { id:2, type:'stock-alert', title:'Stock bajo — Soda Stereo L', sub:'Hace 1 hora · 1 unidad restante', icon:'⚠️' },
+  { id:3, type:'confirm', title:'Venta confirmada — $56.000', sub:'Ayer · 2 productos', icon:'✅' },
+];
+
+let demoStats = { ventas: 3, recaudado: 84000, pendientes: 1 };
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let currentUser = null;
+let products = [];
+let activeFilter = 'all';
+let editingProductId = null;
+let currentQty = 0;
+let currentPhotoData = null;
+let deferredInstallPrompt = null;
+
+// ─────────────────────────────────────────────
+//  SUPABASE HELPERS (demo si no configurado)
+// ─────────────────────────────────────────────
+const isSupabaseConfigured = () =>
+  SUPABASE_URL !== 'https://TU_PROYECTO.supabase.co';
+
+async function supabaseFetch(path, opts={}) {
+  const res = await fetch(SUPABASE_URL + path, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      ...opts.headers
+    },
+    ...opts
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// ─────────────────────────────────────────────
+//  AUTH
+// ─────────────────────────────────────────────
+async function handleLogin() {
+  const email = document.getElementById('email').value.trim();
+  const pass = document.getElementById('password').value;
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  err.textContent = '';
+
+  if (!email || !pass) { err.textContent = 'Completá todos los campos'; return; }
+
+  btn.classList.add('loading');
+  btn.textContent = 'Ingresando…';
+
+  try {
+    if (isSupabaseConfigured()) {
+      const data = await supabaseFetch('/auth/v1/token?grant_type=password', {
+        method: 'POST',
+        body: JSON.stringify({ email, password: pass })
+      });
+      if (data.error) throw new Error(data.error_description || data.error);
+      currentUser = data.user;
+      localStorage.setItem('lb_session', JSON.stringify({ access_token: data.access_token, user: data.user }));
+    } else {
+      // DEMO MODE — aceptar cualquier email/contraseña
+      if (pass.length < 4) throw new Error('Contraseña muy corta');
+      currentUser = { email, id: 'demo' };
+      localStorage.setItem('lb_session', JSON.stringify({ demo: true, email }));
+    }
+    showApp();
+  } catch(e) {
+    err.textContent = e.message || 'Error al ingresar';
+  } finally {
+    btn.classList.remove('loading');
+    btn.textContent = 'Entrar';
+  }
+}
+
+function handleLogout() {
+  localStorage.removeItem('lb_session');
+  currentUser = null;
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('fab-add').style.display = 'none';
+  showToast('Sesión cerrada');
+}
+
+function checkSession() {
+  const s = localStorage.getItem('lb_session');
+  if (s) {
+    try {
+      const session = JSON.parse(s);
+      currentUser = session.user || { email: session.email, id:'demo' };
+      showApp();
+      return true;
+    } catch {}
+  }
+  return false;
+}
+
+// ─────────────────────────────────────────────
+//  SHOW APP
+// ─────────────────────────────────────────────
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+  document.getElementById('fab-add').style.display = 'flex';
+
+  const email = currentUser?.email || '';
+  document.querySelector('.avatar-btn').textContent = email.charAt(0).toUpperCase() || 'A';
+
+  const now = new Date();
+  document.getElementById('today-date').textContent =
+    now.toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long' });
+
+  if (!isSupabaseConfigured()) {
+    document.getElementById('supabase-banner').style.display = 'flex';
+  } else {
+    document.getElementById('supabase-banner').style.display = 'none';
+  }
+
+  loadDashboard();
+  loadProducts();
+  navigate('inicio');
+}
+
+// ─────────────────────────────────────────────
+//  DASHBOARD
+// ─────────────────────────────────────────────
+async function loadDashboard() {
+  let stats = demoStats;
+  let notifs = demoNotifs;
+
+  if (isSupabaseConfigured()) {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const orders = await supabaseFetch(`/rest/v1/orders?created_at=gte.${today}T00:00:00&order=created_at.desc`);
+      stats.ventas = orders.length;
+      stats.recaudado = orders.reduce((a,o)=>a+(o.total||0),0);
+      stats.pendientes = orders.filter(o=>o.status==='pending').length;
+
+      const prods = await supabaseFetch('/rest/v1/products?select=id,qty,name&order=created_at.desc&limit=10');
+      notifs = prods.filter(p=>p.qty<=3).map(p=>({
+        id:p.id, type:'stock-alert',
+        title:`Stock bajo — ${p.name}`,
+        sub:`${p.qty} unidad${p.qty!==1?'es':''} restante${p.qty!==1?'s':''}`,
+        icon:'⚠️'
+      }));
+    } catch {}
+  }
+
+  const threshold = parseInt(localStorage.getItem('lb_threshold')||'3');
+  const lowCount = products.length > 0
+    ? products.filter(p=>p.qty>0 && p.qty<=threshold).length
+    : demoProducts.filter(p=>p.qty>0 && p.qty<=threshold).length;
+  const outCount = (products.length > 0 ? products : demoProducts).filter(p=>p.qty===0).length;
+
+  document.getElementById('stat-ventas').textContent = stats.ventas;
+  document.getElementById('stat-ventas-sub').textContent = '+1 vs ayer';
+  document.getElementById('stat-recaudado').textContent =
+    '$' + (stats.recaudado >= 1000 ? Math.round(stats.recaudado/1000)+'k' : stats.recaudado.toLocaleString('es-AR'));
+  document.getElementById('stat-pendientes').textContent = stats.pendientes;
+  document.getElementById('stat-stock-bajo').textContent = lowCount;
+
+  // Notif badge
+  const badge = document.getElementById('notif-badge');
+  badge.style.display = notifs.length > 0 ? 'block' : 'none';
+
+  // Notif list
+  const list = document.getElementById('notif-list');
+  list.innerHTML = notifs.slice(0,5).map(n=>`
+    <div class="notif-item">
+      <div class="notif-dot ${n.type}"></div>
+      <div class="notif-body">
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-meta">${n.sub}</div>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state"><p>sin notificaciones recientes</p></div>';
+
+  // Notif drawer list
+  const dl = document.getElementById('notif-drawer-list');
+  dl.innerHTML = notifs.map(n=>`
+    <div class="nd-item">
+      <div class="nd-icon ${n.type}">${n.icon}</div>
+      <div class="nd-body">
+        <div class="nd-title">${n.title}</div>
+        <div class="nd-sub">${n.sub}</div>
+      </div>
+    </div>
+  `).join('') || '<p style="color:var(--text-muted);font-size:12px;padding:20px 0">No hay notificaciones</p>';
+}
+
+// ─────────────────────────────────────────────
+//  PRODUCTS / STOCK
+// ─────────────────────────────────────────────
+async function loadProducts() {
+  if (isSupabaseConfigured()) {
+    try {
+      const data = await supabaseFetch('/rest/v1/products?select=*&order=name');
+      products = data.map(p=>({
+        id: p.id,
+        name: p.name,
+        desc: p.description || '',
+        category: p.category || 'Otros',
+        price: p.price || 0,
+        qty: p.stock ?? p.qty ?? 0,
+        emoji: p.emoji || '📦',
+        img: p.image_url || null
+      }));
+    } catch {
+      products = demoProducts;
+    }
+  } else {
+    products = demoProducts;
+  }
+  renderProducts();
+}
+
+function renderProducts() {
+  const threshold = parseInt(localStorage.getItem('lb_threshold')||'3');
+  const q = document.getElementById('search-input').value.toLowerCase();
+
+  let filtered = products.filter(p => {
+    const matchSearch = p.name.toLowerCase().includes(q) ||
+      (p.desc||'').toLowerCase().includes(q) ||
+      (p.category||'').toLowerCase().includes(q);
+    let matchFilter = true;
+    if (activeFilter === 'low') matchFilter = p.qty > 0 && p.qty <= threshold;
+    if (activeFilter === 'out') matchFilter = p.qty === 0;
+    if (activeFilter === 'ok') matchFilter = p.qty > threshold;
+    return matchSearch && matchFilter;
+  });
+
+  const list = document.getElementById('stock-list');
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state"><p>no se encontraron productos</p></div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(p => {
+    let qtyClass = 'qty-ok', qtyLabel = 'disponible';
+    if (p.qty === 0) { qtyClass = 'qty-out'; qtyLabel = 'agotado'; }
+    else if (p.qty <= threshold) { qtyClass = 'qty-low'; qtyLabel = 'stock bajo'; }
+
+    const thumb = p.img
+      ? `<img src="${p.img}" alt="${p.name}">`
+      : (p.emoji || '📦');
+
+    return `
+      <div class="stock-item" onclick="openEditProduct(${p.id})">
+        <div class="stock-thumb">${typeof thumb === 'string' && thumb.startsWith('<img') ? thumb : `<span>${thumb}</span>`}</div>
+        <div class="stock-info">
+          <div class="stock-name">${p.name}</div>
+          <div class="stock-desc">${p.desc || p.category || ''} · $${(p.price||0).toLocaleString('es-AR')}</div>
+        </div>
+        <div class="stock-qty">
+          <div class="qty-badge ${qtyClass}">${p.qty}</div>
+          <div class="qty-label">${qtyLabel}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterProducts() { renderProducts(); }
+
+function setFilter(filter, el) {
+  activeFilter = filter;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderProducts();
+}
+
+// ─────────────────────────────────────────────
+//  PRODUCT MODAL
+// ─────────────────────────────────────────────
+function openAddProduct() {
+  editingProductId = null;
+  currentPhotoData = null;
+  currentQty = 0;
+  document.getElementById('modal-title-text').textContent = 'Nuevo producto';
+  document.getElementById('edit-name').value = '';
+  document.getElementById('edit-desc').value = '';
+  document.getElementById('edit-price').value = '';
+  document.getElementById('edit-category').value = 'Remeras';
+  document.getElementById('qty-display').textContent = '0';
+  document.getElementById('edit-thumb-content').innerHTML = '👕';
+  document.getElementById('btn-delete-product').style.display = 'none';
+  openModal('product-modal');
+}
+
+function openEditProduct(id) {
+  const p = products.find(x=>x.id===id);
+  if (!p) return;
+  editingProductId = id;
+  currentPhotoData = null;
+  currentQty = p.qty;
+  document.getElementById('modal-title-text').textContent = 'Editar producto';
+  document.getElementById('edit-name').value = p.name;
+  document.getElementById('edit-desc').value = p.desc || '';
+  document.getElementById('edit-price').value = p.price || '';
+  document.getElementById('edit-category').value = p.category || 'Otros';
+  document.getElementById('qty-display').textContent = p.qty;
+
+  if (p.img) {
+    document.getElementById('edit-thumb-content').innerHTML = `<img src="${p.img}" alt="">`;
+  } else {
+    document.getElementById('edit-thumb-content').innerHTML = p.emoji || '📦';
+  }
+
+  document.getElementById('btn-delete-product').style.display = 'block';
+  openModal('product-modal');
+}
+
+function changeQty(delta) {
+  currentQty = Math.max(0, currentQty + delta);
+  document.getElementById('qty-display').textContent = currentQty;
+}
+
+function handlePhotoChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    currentPhotoData = ev.target.result;
+    document.getElementById('edit-thumb-content').innerHTML = `<img src="${currentPhotoData}" alt="">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveProduct() {
+  const name = document.getElementById('edit-name').value.trim();
+  if (!name) { showToast('El nombre es obligatorio'); return; }
+
+  const product = {
+    name,
+    desc: document.getElementById('edit-desc').value.trim(),
+    category: document.getElementById('edit-category').value,
+    price: parseInt(document.getElementById('edit-price').value)||0,
+    qty: currentQty,
+    emoji: '📦',
+    img: currentPhotoData
+  };
+
+  if (isSupabaseConfigured()) {
+    try {
+      if (editingProductId) {
+        await supabaseFetch(`/rest/v1/products?id=eq.${editingProductId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ name:product.name, description:product.desc, category:product.category, price:product.price, stock:product.qty })
+        });
+      } else {
+        await supabaseFetch('/rest/v1/products', {
+          method: 'POST',
+          body: JSON.stringify({ name:product.name, description:product.desc, category:product.category, price:product.price, stock:product.qty })
+        });
+      }
+      await loadProducts();
+    } catch(e) { showToast('Error al guardar'); return; }
+  } else {
+    if (editingProductId) {
+      const idx = demoProducts.findIndex(p=>p.id===editingProductId);
+      if (idx>=0) demoProducts[idx] = { ...demoProducts[idx], ...product };
+    } else {
+      const newId = Math.max(...demoProducts.map(p=>p.id),0)+1;
+      demoProducts.push({ id:newId, ...product });
+    }
+    products = demoProducts;
+    renderProducts();
+  }
+
+  closeModal('product-modal');
+  showToast(editingProductId ? 'Producto actualizado ✓' : 'Producto creado ✓');
+  loadDashboard();
+
+  // Check threshold
+  const threshold = parseInt(localStorage.getItem('lb_threshold')||'3');
+  if (product.qty <= threshold && product.qty > 0) {
+    scheduleLocalNotif(`Stock bajo: ${product.name}`, `Quedan ${product.qty} unidades`);
+  }
+}
+
+async function deleteProduct() {
+  if (!editingProductId) return;
+  if (!confirm('¿Eliminar este producto?')) return;
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabaseFetch(`/rest/v1/products?id=eq.${editingProductId}`, { method:'DELETE' });
+      await loadProducts();
+    } catch { showToast('Error al eliminar'); return; }
+  } else {
+    demoProducts = demoProducts.filter(p=>p.id!==editingProductId);
+    products = demoProducts;
+    renderProducts();
+  }
+
+  closeModal('product-modal');
+  showToast('Producto eliminado');
+}
+
+// ─────────────────────────────────────────────
+//  NAVIGATION
+// ─────────────────────────────────────────────
+function navigate(screen) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+  document.getElementById('nav-'+screen).classList.add('active');
+
+  const fab = document.getElementById('fab-add');
+  fab.style.display = screen === 'stock' ? 'flex' : 'none';
+
+  if (screen === 'inicio') loadDashboard();
+  if (screen === 'stock') renderProducts();
+}
+
+function goToSettings() { navigate('ajustes'); }
+
+// ─────────────────────────────────────────────
+//  MODALS
+// ─────────────────────────────────────────────
+function openModal(id) {
+  const m = document.getElementById(id);
+  m.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  const m = document.getElementById(id);
+  m.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click', e=>{
+    if (e.target === m) closeModal(m.id);
+  });
+});
+
+function openNotifDrawer() {
+  openModal('notif-modal');
+  document.getElementById('notif-badge').style.display = 'none';
+}
+
+// ─────────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ─────────────────────────────────────────────
+//  SETTINGS
+// ─────────────────────────────────────────────
+function toggleSetting(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('on');
+  const key = 'lb_' + id;
+  localStorage.setItem(key, el.classList.contains('on') ? '1' : '0');
+  showToast(el.classList.contains('on') ? 'Notificación activada' : 'Notificación desactivada');
+}
+
+function saveThreshold(val) {
+  localStorage.setItem('lb_threshold', val);
+  showToast(`Alerta a ≤${val} unidades`);
+  renderProducts();
+}
+
+// ─────────────────────────────────────────────
+//  PUSH NOTIFICATIONS
+// ─────────────────────────────────────────────
+async function enablePush() {
+  if (!('Notification' in window)) {
+    showToast('Tu navegador no soporta notificaciones'); return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    showToast('Notificaciones activadas 🔔');
+    if ('serviceWorker' in navigator && VAPID_PUBLIC_KEY !== 'TU_VAPID_PUBLIC_KEY') {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+        console.log('Push subscription:', JSON.stringify(sub));
+        // Enviar sub al backend (Supabase Edge Function)
+        if (isSupabaseConfigured()) {
+          await supabaseFetch('/functions/v1/save-push-subscription', {
+            method:'POST', body: JSON.stringify(sub)
+          });
+        }
+      } catch(e) { console.warn('Push error:', e); }
+    }
+  } else {
+    showToast('Permisos denegados');
+  }
+}
+
+function scheduleLocalNotif(title, body) {
+  if (Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '/icon-192.png' });
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw = atob(base64);
+  return Uint8Array.from(raw, c=>c.charCodeAt(0));
+}
+
+// ─────────────────────────────────────────────
+//  PWA INSTALL
+// ─────────────────────────────────────────────
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (!localStorage.getItem('pwa_dismissed')) {
+    setTimeout(()=>document.getElementById('install-prompt').classList.add('show'), 3000);
+  }
+});
+
+async function installPWA() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  if (outcome === 'accepted') showToast('¡App instalada! 🎉');
+  deferredInstallPrompt = null;
+  document.getElementById('install-prompt').classList.remove('show');
+}
+
+function dismissInstall() {
+  document.getElementById('install-prompt').classList.remove('show');
+  localStorage.setItem('pwa_dismissed', '1');
+}
+
+// ─────────────────────────────────────────────
+//  SERVICE WORKER REGISTRATION
+// ─────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'luzbelito-v1';
+    const ASSETS = ['/admin.html'];
+    self.addEventListener('install', e=>e.waitUntil(
+      caches.open(CACHE).then(c=>c.addAll(ASSETS))
+    ));
+    self.addEventListener('fetch', e=>e.respondWith(
+      caches.match(e.request).then(r=>r||fetch(e.request))
+    ));
+    self.addEventListener('push', e=>{
+      const data = e.data?.json() || {};
+      e.waitUntil(self.registration.showNotification(
+        data.title || 'LUZBELITO', { body: data.body, icon: '/icon-192.png' }
+      ));
+    });
+  `;
+  const swBlob = new Blob([swCode], { type:'text/javascript' });
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+
+// ─────────────────────────────────────────────
+//  PWA MANIFEST (inline)
+// ─────────────────────────────────────────────
+const manifest = {
+  name: 'LUZBELITO Admin',
+  short_name: 'LUZBELITO',
+  start_url: '/admin.html',
+  display: 'standalone',
+  background_color: '#1a0a0a',
+  theme_color: '#1a0a0a',
+  icons: [
+    { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%237a1a2e'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='100' fill='%23f5f0e8'%3EL%3C/text%3E%3C/svg%3E", sizes:'192x192', type:'image/svg+xml' },
+    { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%237a1a2e'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='280' fill='%23f5f0e8'%3EL%3C/text%3E%3C/svg%3E", sizes:'512x512', type:'image/svg+xml' }
+  ]
+};
+const mBlob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+document.getElementById('manifest-link').href = URL.createObjectURL(mBlob);
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+if (!checkSession()) {
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// Load saved settings
+['toggle-sale','toggle-stock','toggle-confirm'].forEach(id=>{
+  const saved = localStorage.getItem('lb_'+id);
+  if (saved === '0') document.getElementById(id).classList.remove('on');
+});
+const savedThreshold = localStorage.getItem('lb_threshold');
+if (savedThreshold) document.getElementById('stock-threshold').value = savedThreshold;
+
+// Enter key on login
+document.getElementById('password').addEventListener('keydown', e=>{
+  if (e.key === 'Enter') handleLogin();
+});
+</script>
+</body>
+</html>
