@@ -544,6 +544,7 @@ let activeFilter = 'all', activeOrderFilter = 'all';
 let editingProductId = null;
 let tallesQty = { S:0, M:0, L:0, XL:0 };
 let deferredInstallPrompt = null;
+let _appReady = false;
 
 // ─── API HELPER ──────────────────────────────────────────────────
 async function api(path, opts = {}) {
@@ -558,6 +559,13 @@ async function api(path, opts = {}) {
     },
     ...opts
   });
+  if (res.status === 401) {
+    localStorage.removeItem('lb_session');
+    currentUser = null; _appReady = false;
+    document.getElementById('app').classList.remove('active');
+    document.getElementById('login-screen').style.display = 'flex';
+    throw new Error('Sesión expirada — ingresá de nuevo');
+  }
   const text = await res.text();
   if (!res.ok) throw new Error(text);
   return text ? JSON.parse(text) : null;
@@ -593,7 +601,7 @@ async function handleLogin() {
 
 function handleLogout() {
   localStorage.removeItem('lb_session');
-  currentUser = null;
+  currentUser = null; _appReady = false;
   document.getElementById('app').classList.remove('active');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('fab-add').style.display = 'none';
@@ -625,8 +633,8 @@ function showApp() {
   document.getElementById('today-date').textContent =
     now.toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long' });
 
-  loadProducts().then(() => loadDashboard());
   navigate('inicio');
+  loadProducts().then(() => { _appReady = true; loadDashboard(); });
 }
 
 // ─── NAVEGACIÓN ───────────────────────────────────────────────────
@@ -635,12 +643,13 @@ function navigate(screen) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('screen-' + screen).classList.add('active');
   document.getElementById('nav-' + screen).classList.add('active');
-
   document.getElementById('fab-add').style.display = screen === 'stock' ? 'flex' : 'none';
+  document.getElementById('main-content').scrollTop = 0;
 
+  if (!_appReady) return;
   if (screen === 'inicio') loadDashboard();
   if (screen === 'pedidos') loadPedidos();
-  if (screen === 'stock') renderProducts();
+  if (screen === 'stock') loadProducts();
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────
@@ -863,22 +872,21 @@ async function saveProduct() {
         method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
         body: JSON.stringify(updateData)
       });
-      // Update talles
+      // Update talles en paralelo
       const existingTalles = products.find(p => p.id === editingProductId)?.talles || [];
-      for (const talle of ['S','M','L','XL']) {
+      await Promise.all(['S','M','L','XL'].map(talle => {
         const existe = existingTalles.find(t => t.talle === talle);
         if (existe) {
-          await api(`/rest/v1/producto_talles?producto_id=eq.${editingProductId}&talle=eq.${talle}`, {
+          return api(`/rest/v1/producto_talles?producto_id=eq.${editingProductId}&talle=eq.${talle}`, {
             method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
             body: JSON.stringify({ stock: tallesQty[talle] || 0 })
           });
-        } else {
-          await api('/rest/v1/producto_talles', {
-            method: 'POST', headers: { 'Prefer': 'return=minimal' },
-            body: JSON.stringify({ producto_id: editingProductId, talle, stock: tallesQty[talle] || 0 })
-          });
         }
-      }
+        return api('/rest/v1/producto_talles', {
+          method: 'POST', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ producto_id: editingProductId, talle, stock: tallesQty[talle] || 0 })
+        });
+      }));
     } else {
       const resp = await api('/rest/v1/productos', {
         method: 'POST', headers: { 'Prefer': 'return=representation' },
@@ -1146,7 +1154,7 @@ function dismissInstall() {
 if ('serviceWorker' in navigator) {
   const swCode = `
     const CACHE='luzbelito-admin-v2';
-    self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/admin.html']))));
+    self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/index.html']))));
     self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
     self.addEventListener('push',e=>{const d=e.data?.json()||{};e.waitUntil(self.registration.showNotification(d.title||'LUZBELITO',{body:d.body,icon:'/icon-192.png'}));});
   `;
@@ -1157,7 +1165,7 @@ if ('serviceWorker' in navigator) {
 
 // ─── PWA MANIFEST ─────────────────────────────────────────────────
 const mBlob = new Blob([JSON.stringify({
-  name:'LUZBELITO Admin', short_name:'LUZBELITO', start_url:'/admin.html',
+  name:'LUZBELITO Admin', short_name:'LUZBELITO', start_url:'/',
   display:'standalone', background_color:'#1a0a0a', theme_color:'#1a0a0a',
   icons:[
     { src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%237a1a2e'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='100' fill='%23f5f0e8'%3EL%3C/text%3E%3C/svg%3E", sizes:'192x192', type:'image/svg+xml' }
