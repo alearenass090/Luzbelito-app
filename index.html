@@ -261,9 +261,12 @@ html, body { height: 100%; background: var(--cream); font-family: 'DM Mono', mon
 
     <!-- INICIO -->
     <div class="screen active" id="screen-inicio">
-      <div class="greeting">
-        <h1>Hoy <span>✦</span></h1>
-        <p id="today-date">cargando...</p>
+      <div class="greeting" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h1>Hoy <span>✦</span></h1>
+          <p id="today-date">cargando...</p>
+        </div>
+        <button onclick="refreshInicio()" id="refresh-btn" style="background:var(--white);border:1.5px solid var(--cream-mid);border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text-muted);flex-shrink:0;transition:all 0.2s;margin-top:4px" title="Actualizar">↺</button>
       </div>
       <div class="stats-grid">
         <div class="stat-card">
@@ -650,6 +653,22 @@ function navigate(screen) {
   if (screen === 'inicio') loadDashboard();
   if (screen === 'pedidos') loadPedidos();
   if (screen === 'stock') loadProducts();
+}
+
+// ─── REFRESH INICIO ───────────────────────────────────────────────
+async function refreshInicio() {
+  const btn = document.getElementById('refresh-btn');
+  btn.style.transform = 'rotate(360deg)';
+  btn.style.transition = 'transform 0.5s ease';
+  btn.disabled = true;
+  await loadProducts();
+  await loadDashboard();
+  setTimeout(() => {
+    btn.style.transform = '';
+    btn.style.transition = 'all 0.2s';
+    btn.disabled = false;
+  }, 500);
+  showToast('Datos actualizados ✓');
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────
